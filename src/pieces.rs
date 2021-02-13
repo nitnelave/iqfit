@@ -46,7 +46,7 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn as_byte(&self) -> u8 {
+    pub const fn as_byte(&self) -> u8 {
         self.into_bytes()[0]
     }
     pub fn from_byte(b: u8) -> Result<Piece, OutOfBounds> {
