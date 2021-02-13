@@ -61,3 +61,9 @@ pub struct PlacedPiece {
     /// The position of the top-left corner, from 0 to 50.
     pub top_left: u8,
 }
+
+impl PlacedPiece {
+    pub fn top_left_coords(&self) -> (u8, u8) {
+        (self.top_left / 10, self.top_left % 10)
+    }
+}
