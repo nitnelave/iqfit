@@ -1,7 +1,7 @@
 // Keep this definition alone in this file, it is included by the build script.
 
 /// Information about a board piece, to place and display it.
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct DisplayBoardPlacementInfo {
     /// How many columns to the right of the top_left do you need.
     pub width_right: u8,

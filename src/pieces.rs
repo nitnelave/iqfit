@@ -2,7 +2,7 @@ use modular_bitfield::error::OutOfBounds;
 use modular_bitfield::{bitfield, BitfieldSpecifier};
 
 /// Which physical piece.
-#[derive(BitfieldSpecifier, Debug, Copy, Clone)]
+#[derive(BitfieldSpecifier, Debug, Copy, Clone, PartialEq, Eq)]
 #[bits = 4]
 pub enum Color {
     Yellow,
@@ -18,7 +18,7 @@ pub enum Color {
 }
 
 /// Which face:
-#[derive(BitfieldSpecifier, Debug, Copy, Clone)]
+#[derive(BitfieldSpecifier, Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Face {
     /// One ball sticking out.
     A,
@@ -29,7 +29,7 @@ pub enum Face {
 /// Which way the piece is facing.
 /// Up has the main line vertical, and the extra ball(s) to the right.
 /// The rest are successive 90 degrees rotations to the right.
-#[derive(BitfieldSpecifier, Debug, Copy, Clone)]
+#[derive(BitfieldSpecifier, Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Orientation {
     Up,
     Right,
@@ -38,7 +38,7 @@ pub enum Orientation {
 }
 
 #[bitfield(filled = false)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Piece {
     pub orientation: Orientation,
     pub face: Face,
@@ -54,7 +54,7 @@ impl Piece {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct PlacedPiece {
     /// Which piece, in which orientation.
     pub piece: Piece,
