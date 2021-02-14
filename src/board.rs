@@ -1,6 +1,9 @@
 use crate::pieces::*;
 
+mod display_board_placement_info;
 mod display_board_placement_info_gen;
+
+use display_board_placement_info::DisplayBoardPlacementInfo;
 
 trait Board {
     fn place_piece(&mut self, piece: PlacedPiece) -> bool;
@@ -73,18 +76,6 @@ impl DisplayBoard {
     fn cell_at(&mut self, index: u8) -> &mut Option<Color> {
         &mut self.cells[index as usize]
     }
-}
-
-pub struct DisplayBoardPlacementInfo {
-    /// How many columns to the right of the top_left do you need.
-    pub width_right: u8,
-    /// How many columns to the left of the top_left do you need.
-    pub width_left: u8,
-    /// How many rows below the top_left do you need.
-    pub height: u8,
-
-    pub num_balls: u8,
-    pub balls: [u8; 6],
 }
 
 pub const fn get_placement_info(piece: Piece) -> &'static DisplayBoardPlacementInfo {
