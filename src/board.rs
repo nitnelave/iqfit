@@ -10,19 +10,8 @@ pub trait Board {
     fn place_piece(&mut self, piece: PlacedPiece) -> bool;
     fn pop_piece(&mut self);
     fn piece_list(&self) -> &Vec<PlacedPiece>;
+    fn first_empty_cell(&self) -> Option<u8>;
     fn empty() -> Self;
-    fn from_piece_list(pieces: &Vec<PlacedPiece>) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        let mut board = Self::empty();
-        for p in pieces {
-            if !board.place_piece(*p) {
-                return None;
-            }
-        }
-        Some(board)
-    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -71,11 +60,34 @@ impl Board for DisplayBoard {
             cells: [None; 50],
         }
     }
+
+    fn first_empty_cell(&self) -> Option<u8> {
+        let mut first_empty_cell_index = 0;
+        while first_empty_cell_index < 50 && self.cells[first_empty_cell_index as usize].is_some() {
+            first_empty_cell_index += 1;
+        }
+        if first_empty_cell_index == 50 {
+            None
+        } else {
+            Some(first_empty_cell_index)
+        }
+    }
 }
 
 impl DisplayBoard {
     fn cell_at(&mut self, index: u8) -> &mut Option<Color> {
         &mut self.cells[index as usize]
+    }
+
+    pub fn from_piece_list(pieces: &Vec<PlacedPiece>) -> Option<Self>
+    {
+        let mut board = Self::empty();
+        for p in pieces {
+            if !board.place_piece(*p) {
+                return None;
+            }
+        }
+        Some(board)
     }
 }
 

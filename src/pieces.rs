@@ -2,7 +2,7 @@ use modular_bitfield::error::OutOfBounds;
 use modular_bitfield::{bitfield, BitfieldSpecifier};
 
 /// Which physical piece.
-#[derive(BitfieldSpecifier, Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(BitfieldSpecifier, Debug, Copy, Clone, PartialEq, Eq, Hash)]
 #[bits = 4]
 pub enum Color {
     Yellow,
