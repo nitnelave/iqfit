@@ -1,11 +1,12 @@
 use crate::pieces::*;
+use std::fmt;
 
 mod display_board_placement_info;
 mod display_board_placement_info_gen;
 
 use display_board_placement_info::DisplayBoardPlacementInfo;
 
-trait Board {
+pub trait Board {
     fn place_piece(&mut self, piece: PlacedPiece) -> bool;
     fn pop_piece(&mut self);
     fn piece_list(&self) -> &Vec<PlacedPiece>;
@@ -75,6 +76,33 @@ impl Board for DisplayBoard {
 impl DisplayBoard {
     fn cell_at(&mut self, index: u8) -> &mut Option<Color> {
         &mut self.cells[index as usize]
+    }
+}
+
+impl fmt::Display for DisplayBoard {
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use colored::Colorize;
+        for row in 0..5 {
+            for col in 0..10 {
+                let index = row * 10 + col;
+                write!(f, "{}", match self.cells[index] {
+                    None => "  ".on_black(),
+                    Some(Color::Yellow) => "  ".on_yellow(),
+                    Some(Color::Orange) => "  ".on_bright_red(),
+                    Some(Color::Red) => "  ".on_red(),
+                    Some(Color::Pink) => "  ".on_bright_purple(),
+                    Some(Color::LightGreen) => "  ".on_bright_green(),
+                    Some(Color::Green) => "  ".on_green(),
+                    Some(Color::LightBlue) => "  ".on_bright_cyan(),
+                    Some(Color::Blue) => "  ".on_bright_blue(),
+                    Some(Color::DeepBlue) => "  ".on_blue(),
+                    Some(Color::Purple) => "  ".on_purple(),
+                })?;
+            }
+            writeln!(f, "")?;
+        }
+        Ok(())
     }
 }
 
