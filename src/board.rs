@@ -79,8 +79,7 @@ impl DisplayBoard {
         &mut self.cells[index as usize]
     }
 
-    pub fn from_piece_list(pieces: &Vec<PlacedPiece>) -> Option<Self>
-    {
+    pub fn from_piece_list(pieces: &[PlacedPiece]) -> Option<Self> {
         let mut board = Self::empty();
         for p in pieces {
             if !board.place_piece(*p) {
@@ -92,25 +91,28 @@ impl DisplayBoard {
 }
 
 impl fmt::Display for DisplayBoard {
-
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         use colored::Colorize;
         for row in 0..5 {
             for col in 0..10 {
                 let index = row * 10 + col;
-                write!(f, "{}", match self.cells[index] {
-                    None => "  ".on_black(),
-                    Some(Color::Yellow) => "  ".on_yellow(),
-                    Some(Color::Orange) => "  ".on_bright_red(),
-                    Some(Color::Red) => "  ".on_red(),
-                    Some(Color::Pink) => "  ".on_bright_purple(),
-                    Some(Color::LightGreen) => "  ".on_bright_green(),
-                    Some(Color::Green) => "  ".on_green(),
-                    Some(Color::LightBlue) => "  ".on_bright_cyan(),
-                    Some(Color::Blue) => "  ".on_bright_blue(),
-                    Some(Color::DeepBlue) => "  ".on_blue(),
-                    Some(Color::Purple) => "  ".on_purple(),
-                })?;
+                write!(
+                    f,
+                    "{}",
+                    match self.cells[index] {
+                        None => "  ".on_black(),
+                        Some(Color::Yellow) => "  ".on_yellow(),
+                        Some(Color::Orange) => "  ".on_bright_red(),
+                        Some(Color::Red) => "  ".on_red(),
+                        Some(Color::Pink) => "  ".on_bright_purple(),
+                        Some(Color::LightGreen) => "  ".on_bright_green(),
+                        Some(Color::Green) => "  ".on_green(),
+                        Some(Color::LightBlue) => "  ".on_bright_cyan(),
+                        Some(Color::Blue) => "  ".on_bright_blue(),
+                        Some(Color::DeepBlue) => "  ".on_blue(),
+                        Some(Color::Purple) => "  ".on_purple(),
+                    }
+                )?;
             }
             writeln!(f, "")?;
         }

@@ -1,8 +1,8 @@
 mod board;
 mod pieces;
 mod solver;
-use pieces::*;
 use board::*;
+use pieces::*;
 
 fn main() {
     // Puzzle 49.
@@ -47,7 +47,7 @@ fn main() {
             top_left: 34,
         },
     ];
-    let mut board = DisplayBoard::from_piece_list(&pieces).unwrap();
+    let board = DisplayBoard::from_piece_list(&pieces).unwrap();
     println!("{}", board);
     let solved_board = solver::solve(board);
     if let Some(b) = solved_board {

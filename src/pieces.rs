@@ -1,4 +1,3 @@
-use modular_bitfield::error::OutOfBounds;
 use modular_bitfield::{bitfield, BitfieldSpecifier};
 
 /// Which physical piece.
@@ -40,7 +39,9 @@ pub enum Orientation {
 #[bitfield(filled = false)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Piece {
+    #[skip(getters)]
     pub orientation: Orientation,
+    #[skip(getters)]
     pub face: Face,
     pub color: Color,
 }
@@ -48,9 +49,6 @@ pub struct Piece {
 impl Piece {
     pub const fn as_byte(&self) -> u8 {
         self.into_bytes()[0]
-    }
-    pub fn from_byte(b: u8) -> Result<Piece, OutOfBounds> {
-        Piece::from_bytes([b])
     }
 }
 

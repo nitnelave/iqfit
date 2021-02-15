@@ -1,9 +1,8 @@
 use crate::board::Board;
-use crate::board::DisplayBoard;
 use crate::pieces::*;
 use std::collections::HashSet;
 
-const COLOR_LIST : [Color; 10] = [
+const COLOR_LIST: [Color; 10] = [
     Color::Yellow,
     Color::Orange,
     Color::Red,
@@ -16,16 +15,16 @@ const COLOR_LIST : [Color; 10] = [
     Color::Purple,
 ];
 
-const FACE_LIST : [Face; 2] = [Face::A, Face::B];
+const FACE_LIST: [Face; 2] = [Face::A, Face::B];
 
-const ORIENTATION_LIST : [Orientation; 4] = [
+const ORIENTATION_LIST: [Orientation; 4] = [
     Orientation::Up,
     Orientation::Right,
     Orientation::Down,
     Orientation::Left,
 ];
 
-fn get_colorset() -> HashSet::<Color> {
+fn get_colorset() -> HashSet<Color> {
     let mut pieces_left = HashSet::<Color>::with_capacity(10);
     for c in COLOR_LIST.iter() {
         pieces_left.insert(*c);
@@ -33,13 +32,16 @@ fn get_colorset() -> HashSet::<Color> {
     pieces_left
 }
 
-fn solve_rec<B: Board>(board: &mut B, colors_left: &mut HashSet::<Color>) -> bool {
+fn solve_rec<B: Board>(board: &mut B, colors_left: &mut HashSet<Color>) -> bool {
     let index = board.first_empty_cell();
     if index.is_none() {
         return true;
     }
     let index = index.unwrap();
-    let mut piece = PlacedPiece{ piece: Piece::new(), top_left: index };
+    let mut piece = PlacedPiece {
+        piece: Piece::new(),
+        top_left: index,
+    };
     for c in COLOR_LIST.iter() {
         if !colors_left.remove(c) {
             continue;
