@@ -32,8 +32,12 @@ fn get_colorset() -> HashSet<Color> {
     pieces_left
 }
 
-fn solve_rec<B: Board>(board: &mut B, colors_left: &mut HashSet<Color>) -> bool {
-    let index = board.first_empty_cell();
+fn solve_rec<B: Board>(
+    board: &mut B,
+    colors_left: &mut HashSet<Color>,
+    empty_index_lower_bound: u8,
+) -> bool {
+    let index = board.first_empty_cell(empty_index_lower_bound);
     if index.is_none() {
         return true;
     }
@@ -52,7 +56,7 @@ fn solve_rec<B: Board>(board: &mut B, colors_left: &mut HashSet<Color>) -> bool 
             for orientation in ORIENTATION_LIST.iter() {
                 piece.piece.set_orientation(*orientation);
                 if board.place_piece(piece) {
-                    if solve_rec(board, colors_left) {
+                    if solve_rec(board, colors_left, index + 1) {
                         return true;
                     }
                     board.pop_piece();
@@ -70,7 +74,7 @@ pub fn solve<B: Board>(mut board: B) -> Option<B> {
         assert!(colors_left.remove(&p.piece.color()));
     }
 
-    if solve_rec(&mut board, &mut colors_left) {
+    if solve_rec(&mut board, &mut colors_left, 0) {
         Some(board)
     } else {
         None

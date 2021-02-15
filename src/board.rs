@@ -10,7 +10,7 @@ pub trait Board {
     fn place_piece(&mut self, piece: PlacedPiece) -> bool;
     fn pop_piece(&mut self);
     fn piece_list(&self) -> &Vec<PlacedPiece>;
-    fn first_empty_cell(&self) -> Option<u8>;
+    fn first_empty_cell(&self, lower_bound: u8) -> Option<u8>;
     fn empty() -> Self;
 }
 
@@ -61,8 +61,8 @@ impl Board for DisplayBoard {
         }
     }
 
-    fn first_empty_cell(&self) -> Option<u8> {
-        let mut first_empty_cell_index = 0;
+    fn first_empty_cell(&self, lower_bound: u8) -> Option<u8> {
+        let mut first_empty_cell_index = lower_bound;
         while first_empty_cell_index < 50 && self.cells[first_empty_cell_index as usize].is_some() {
             first_empty_cell_index += 1;
         }
