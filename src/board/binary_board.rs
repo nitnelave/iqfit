@@ -37,21 +37,17 @@ impl Board for BinaryBoard {
     }
 
     fn first_empty_cell(&self, lower_bound: u8) -> Option<u8> {
-        let mut first_empty_cell_index = lower_bound;
-        while first_empty_cell_index < 50
-            && (self.cells & (1 << first_empty_cell_index as u64) != 0)
-        {
-            first_empty_cell_index += 1;
-        }
-        if first_empty_cell_index == 50 {
+        let first_unset_bit = self.get_first_unset_bit(lower_bound);
+        if first_unset_bit == 50 {
             None
         } else {
-            Some(first_empty_cell_index)
+            Some(first_unset_bit)
         }
     }
 }
 
 impl BinaryBoard {
+    #[allow(dead_code)]
     pub fn from_piece_list(pieces: &[PlacedPiece]) -> Option<Self> {
         let mut board = Self::empty();
         for p in pieces {
@@ -61,4 +57,23 @@ impl BinaryBoard {
         }
         Some(board)
     }
+
+    fn get_first_unset_bit(&self, lower_bound: u8) -> u8 {
+        let mut first_empty_cell_byte_index = lower_bound / 8;
+        let cell_bytes = self.cells.to_le_bytes();
+        loop {
+            let first_unset_bit =
+                FIRST_UNSET_BIT[cell_bytes[first_empty_cell_byte_index as usize] as usize];
+            if first_unset_bit < 8 {
+                return first_empty_cell_byte_index * 8 + first_unset_bit;
+            }
+            assert!(
+                first_empty_cell_byte_index < 7,
+                "Could not find first empty cell!"
+            );
+            first_empty_cell_byte_index += 1;
+        }
+    }
 }
+
+include!(concat!(env!("OUT_DIR"), "/first_unset_bit_table.rs"));

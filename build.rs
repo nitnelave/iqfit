@@ -133,11 +133,43 @@ pub const PLACEMENT_INFO: &[&DisplayBoardPlacementInfo; 80] = &["
     write!(file, "];").unwrap();
 }
 
+fn first_unset_bit(byte: u8) -> u8 {
+    for i in 0..8 {
+        if byte & (1 << i) == 0 {
+            return i;
+        }
+    }
+    8
+}
+
+fn write_first_unset_bit_table<T: std::io::Write>(file: &mut T) {
+    write!(file, "pub const FIRST_UNSET_BIT: [u8; 256] = [").unwrap();
+
+    for byte in 0..=255 {
+        write!(
+            file,
+            "
+    {},",
+            first_unset_bit(byte)
+        )
+        .unwrap();
+    }
+    write!(
+        file,
+        "
+];"
+    )
+    .unwrap();
+}
+
 fn main() -> std::io::Result<()> {
     let out_dir = env::var_os("OUT_DIR").unwrap();
     let dest_path = Path::new(&out_dir).join("display_board_placement_info_gen.rs");
     let mut file = fs::File::create(&dest_path)?;
     write_pieces(&mut file);
+    let dest_path = Path::new(&out_dir).join("first_unset_bit_table.rs");
+    let mut file = fs::File::create(&dest_path)?;
+    write_first_unset_bit_table(&mut file);
     println!("cargo:rerun-if-changed=build.rs");
     Ok(())
 }
