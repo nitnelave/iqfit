@@ -36,6 +36,8 @@ fn solve_rec<B: Board>(
     board: &mut B,
     colors_left: &mut HashSet<Color>,
     empty_index_lower_bound: u8,
+    num_face_a: u8,
+    num_face_b: u8,
 ) -> bool {
     let index = board.first_empty_cell(empty_index_lower_bound);
     if index.is_none() {
@@ -52,11 +54,20 @@ fn solve_rec<B: Board>(
         }
         piece.piece.set_color(*c);
         for face in FACE_LIST.iter() {
+            if *face == Face::A {
+                if num_face_a == 6 {
+                    continue;
+                }
+            } else if num_face_b == 4 {
+                continue;
+            }
             piece.piece.set_face(*face);
             for orientation in ORIENTATION_LIST.iter() {
                 piece.piece.set_orientation(*orientation);
                 if board.place_piece(piece) {
-                    if solve_rec(board, colors_left, index + 1) {
+                    let num_a = num_face_a + (*face == Face::A) as u8;
+                    let num_b = num_face_b + (*face == Face::B) as u8;
+                    if solve_rec(board, colors_left, index + 1, num_a, num_b) {
                         return true;
                     }
                     board.pop_piece();
@@ -73,8 +84,14 @@ pub fn solve<B: Board>(mut board: B) -> Option<B> {
     for p in board.piece_list() {
         assert!(colors_left.remove(&p.piece.color()));
     }
+    let num_face_a = board
+        .piece_list()
+        .iter()
+        .filter(|p| p.piece.face() == Face::A)
+        .count() as u8;
+    let num_face_b = board.piece_list().len() as u8 - num_face_a;
 
-    if solve_rec(&mut board, &mut colors_left, 0) {
+    if solve_rec(&mut board, &mut colors_left, 0, num_face_a, num_face_b) {
         Some(board)
     } else {
         None

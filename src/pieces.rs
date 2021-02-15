@@ -41,7 +41,6 @@ pub enum Orientation {
 pub struct Piece {
     #[skip(getters)]
     pub orientation: Orientation,
-    #[skip(getters)]
     pub face: Face,
     pub color: Color,
 }
