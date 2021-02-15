@@ -114,7 +114,7 @@ impl fmt::Display for DisplayBoard {
                     }
                 )?;
             }
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
         Ok(())
     }
