@@ -60,7 +60,7 @@ pub struct PlacedPiece {
 }
 
 impl PlacedPiece {
-    pub fn top_left_coords(&self) -> (u8, u8) {
+    pub const fn top_left_coords(&self) -> (u8, u8) {
         (self.top_left / 10, self.top_left % 10)
     }
 }

@@ -14,4 +14,6 @@ pub struct DisplayBoardPlacementInfo {
     pub num_balls: u8,
     /// The index of the balls, relative to the top-left corner.
     pub balls: [u8; 6],
+    /// The representation of the piece as a bitfield.
+    pub as_binary: u64,
 }

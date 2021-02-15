@@ -71,6 +71,14 @@ fn coord_to_index(coords: (i8, i8)) -> u8 {
     (coords.0 * 10 + coords.1) as u8
 }
 
+fn coords_to_binary(coords: &[u8]) -> u64 {
+    let mut res = 0;
+    for c in coords {
+        res |= 1 << c;
+    }
+    res
+}
+
 fn get_display_info(piece: &Vec<(i8, i8)>) -> DisplayBoardPlacementInfo {
     let max_row = piece.iter().map(|b| b.0).max().unwrap();
     let min_col = piece.iter().map(|b| b.1).min().unwrap();
@@ -87,7 +95,8 @@ fn get_display_info(piece: &Vec<(i8, i8)>) -> DisplayBoardPlacementInfo {
         width_left: (-min_col) as u8,
         height: max_row as u8,
         num_balls: piece.len() as u8,
-        balls: balls,
+        balls,
+        as_binary: coords_to_binary(&balls),
     }
 }
 

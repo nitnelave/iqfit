@@ -15,6 +15,7 @@ path = "src/main.rs"
 [dev-dependencies]
 criterion = "0.3"
 lazy_static = "1.4"
+generic-tests = "0.1.2"
 
 [dependencies]
 modular-bitfield = "~0.11"

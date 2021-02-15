@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use iqfit_solver::board::DisplayBoard;
+use iqfit_solver::board::BinaryBoard;
 use iqfit_solver::pieces::*;
 use iqfit_solver::solver;
 use lazy_static::lazy_static;
@@ -46,8 +46,8 @@ lazy_static! {
     ];
 }
 
-fn solve(pieces: &[PlacedPiece]) -> DisplayBoard {
-    let board = DisplayBoard::from_piece_list(&pieces).unwrap();
+fn solve(pieces: &[PlacedPiece]) -> BinaryBoard {
+    let board = BinaryBoard::from_piece_list(&pieces).unwrap();
     solver::solve(board).unwrap()
 }
 
