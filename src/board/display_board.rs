@@ -1,14 +1,13 @@
 use crate::board::*;
 use std::fmt;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct DisplayBoard {
-    placed_pieces: Vec<PlacedPiece>,
     cells: [Option<Color>; 50],
 }
 
 impl Board for DisplayBoard {
-    fn place_piece(&mut self, piece: PlacedPiece) -> bool {
+    fn can_place_piece(&self, piece: PlacedPiece) -> bool {
         let info = get_placement_info(piece.piece);
         if !is_valid_piece_placement(piece, info) {
             return false;
@@ -19,23 +18,22 @@ impl Board for DisplayBoard {
                 return false;
             }
         }
-        for i in 0..info.num_balls as usize {
-            let shift = info.balls[i];
-            *self.cell_at(piece.top_left + shift) = Some(piece.piece.color());
-        }
-        self.placed_pieces.push(piece);
         true
     }
-    fn pop_piece(&mut self) {
-        let piece = self.placed_pieces.pop().unwrap();
+    fn with_piece(mut self, piece: PlacedPiece) -> Self {
         let info = get_placement_info(piece.piece);
         for i in 0..info.num_balls as usize {
             let shift = info.balls[i];
-            *self.cell_at(piece.top_left + shift) = None;
+            *self.mut_cell_at(piece.top_left + shift) = Some(piece.piece.color());
         }
+        self
     }
     fn is_cell_empty(&self, index: u8) -> bool {
-        self.cells[index as usize].is_none()
+        if index >= 50 {
+            false
+        } else {
+            self.cells[index as usize].is_none()
+        }
     }
     fn check_common_failures(&self, index: u8) -> bool {
         if !self.is_cell_empty(index + 10) {
@@ -48,14 +46,8 @@ impl Board for DisplayBoard {
         }
         false
     }
-    fn piece_list(&self) -> &Vec<PlacedPiece> {
-        &self.placed_pieces
-    }
     fn empty() -> Self {
-        DisplayBoard {
-            placed_pieces: Vec::new(),
-            cells: [None; 50],
-        }
+        DisplayBoard { cells: [None; 50] }
     }
 
     fn first_empty_cell(&self, lower_bound: u8) -> Option<u8> {
@@ -72,18 +64,18 @@ impl Board for DisplayBoard {
 }
 
 impl DisplayBoard {
-    fn cell_at(&mut self, index: u8) -> &mut Option<Color> {
-        &mut self.cells[index as usize]
+    fn cell_at(&self, index: u8) -> &Option<Color> {
+        &self.cells[index as usize]
     }
 
-    pub fn from_piece_list(pieces: &[PlacedPiece]) -> Option<Self> {
-        let mut board = Self::empty();
-        for p in pieces {
-            if !board.place_piece(*p) {
-                return None;
-            }
-        }
-        Some(board)
+    fn mut_cell_at(&mut self, index: u8) -> &mut Option<Color> {
+        &mut self.cells[index as usize]
+    }
+}
+
+impl Default for DisplayBoard {
+    fn default() -> Self {
+        Self::empty()
     }
 }
 

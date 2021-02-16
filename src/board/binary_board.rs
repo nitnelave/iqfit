@@ -1,40 +1,30 @@
 use crate::board::*;
 
 /// Model the board as a bitfield of empty cells.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct BinaryBoard {
-    placed_pieces: Vec<PlacedPiece>,
     /// Bitfield of empty cells. Each bit corresponds to a specific cell, starting from the top
     /// left and going row by row.
     cells: u64,
 }
 
 impl Board for BinaryBoard {
-    fn place_piece(&mut self, piece: PlacedPiece) -> bool {
+    fn can_place_piece(&self, piece: PlacedPiece) -> bool {
         let info = get_placement_info(piece.piece);
         if !is_valid_piece_placement(piece, info) {
             return false;
         }
         let binary_piece = info.as_binary << piece.top_left;
-        if self.cells & binary_piece != 0 {
-            return false;
-        }
-        self.cells |= binary_piece;
-        self.placed_pieces.push(piece);
-        true
+        self.cells & binary_piece == 0
     }
-    fn pop_piece(&mut self) {
-        let piece = self.placed_pieces.pop().unwrap();
+    fn with_piece(mut self, piece: PlacedPiece) -> Self {
         let info = get_placement_info(piece.piece);
         let binary_piece = info.as_binary << piece.top_left;
-        self.cells &= !binary_piece;
-    }
-    fn piece_list(&self) -> &Vec<PlacedPiece> {
-        &self.placed_pieces
+        self.cells |= binary_piece;
+        self
     }
     fn empty() -> Self {
         BinaryBoard {
-            placed_pieces: Vec::with_capacity(10),
             // Set the cells after the board to full.
             cells: (!0) << 50,
         }
@@ -65,18 +55,13 @@ impl Board for BinaryBoard {
     }
 }
 
-impl BinaryBoard {
-    #[allow(dead_code)]
-    pub fn from_piece_list(pieces: &[PlacedPiece]) -> Option<Self> {
-        let mut board = Self::empty();
-        for p in pieces {
-            if !board.place_piece(*p) {
-                return None;
-            }
-        }
-        Some(board)
+impl Default for BinaryBoard {
+    fn default() -> Self {
+        Self::empty()
     }
+}
 
+impl BinaryBoard {
     /// Find the first bit left unset in the bitfield.
     /// This uses a lookup table to get the first unset bit in a byte efficiently.
     #[inline]

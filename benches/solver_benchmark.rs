@@ -4,9 +4,8 @@ use iqfit_solver::pieces::*;
 use iqfit_solver::puzzles::*;
 use iqfit_solver::solver;
 
-fn solve(pieces: &[PlacedPiece]) -> BinaryBoard {
-    let board = BinaryBoard::from_piece_list(&pieces).unwrap();
-    solver::solve(board).unwrap()
+fn solve(pieces: &[PlacedPiece]) -> Vec<PlacedPiece> {
+    solver::solve::<BinaryBoard>(&pieces).unwrap()
 }
 
 fn criterion_benchmark(c: &mut Criterion) {

@@ -45,6 +45,9 @@ impl IterationCounter for SimpleIterationCounter {
     #[inline]
     fn increment(&mut self) {
         self.0 += 1;
+        if self.0 > 5000000 {
+            panic!("Too many iterations!");
+        }
     }
     #[inline]
     fn get(&self) -> u64 {
@@ -77,21 +80,21 @@ impl ColorSet {
     }
 }
 
-fn solve_rec<B: Board, C: IterationCounter>(
-    board: &mut B,
+fn solve_rec<B: Board + Copy, C: IterationCounter>(
+    board: B,
     colors_left: ColorSet,
     empty_index_lower_bound: u8,
     num_face_a: u8,
     num_face_b: u8,
     counter: &mut C,
-) -> bool {
+) -> Option<Vec<PlacedPiece>> {
     let index = board.first_empty_cell(empty_index_lower_bound);
     if index.is_none() {
-        return true;
+        return Some(Vec::with_capacity(10));
     }
     let index = index.unwrap();
     if board.check_common_failures(index) {
-        return false;
+        return None;
     }
     let mut piece = PlacedPiece {
         piece: Piece::new(),
@@ -115,55 +118,69 @@ fn solve_rec<B: Board, C: IterationCounter>(
             for orientation in ORIENTATION_LIST.iter() {
                 piece.piece.set_orientation(*orientation);
                 counter.increment();
-                if board.place_piece(piece) {
+                if board.can_place_piece(piece) {
                     let num_a = num_face_a + (*face == Face::A) as u8;
                     let num_b = num_face_b + (*face == Face::B) as u8;
-                    if solve_rec(board, next_colors, index + 1, num_a, num_b, counter) {
-                        return true;
+                    if let Some(mut pieces) = solve_rec(
+                        board.with_piece(piece),
+                        next_colors,
+                        index + 1,
+                        num_a,
+                        num_b,
+                        counter,
+                    ) {
+                        pieces.push(piece);
+                        return Some(pieces);
                     }
-                    board.pop_piece();
                 }
             }
         }
     }
-    false
+    None
 }
 
-fn solve_impl<B: Board, C: IterationCounter>(mut board: B, counter: &mut C) -> Option<B> {
+fn solve_impl<B: Board, C: IterationCounter>(
+    pieces: &[PlacedPiece],
+    counter: &mut C,
+) -> Option<Vec<PlacedPiece>> {
     let mut colors_left = ColorSet::full();
-    for p in board.piece_list() {
-        assert!(colors_left.remove(p.piece.color()));
+    let mut board = B::default();
+    for p in pieces {
+        debug_assert!(colors_left.remove(p.piece.color()));
+        debug_assert!(board.can_place_piece(*p));
+        board = board.with_piece(*p);
     }
-    let num_face_a = board
-        .piece_list()
-        .iter()
-        .filter(|p| p.piece.face() == Face::A)
-        .count() as u8;
-    let num_face_b = board.piece_list().len() as u8 - num_face_a;
+    let num_face_a = pieces.iter().filter(|p| p.piece.face() == Face::A).count() as u8;
+    let num_face_b = pieces.len() as u8 - num_face_a;
 
-    if solve_rec(&mut board, colors_left, 0, num_face_a, num_face_b, counter) {
-        Some(board)
+    if let Some(mut pieces_solution) =
+        solve_rec(board, colors_left, 0, num_face_a, num_face_b, counter)
+    {
+        for p in pieces {
+            pieces_solution.push(*p);
+        }
+        Some(pieces_solution)
     } else {
         None
     }
 }
 
-pub fn solve<B: Board>(board: B) -> Option<B> {
+pub fn solve<B: Board>(pieces: &[PlacedPiece]) -> Option<Vec<PlacedPiece>> {
     let mut counter = NoOpIterationCounter {};
-    solve_impl(board, &mut counter)
+    solve_impl::<B, NoOpIterationCounter>(pieces, &mut counter)
 }
 
 #[cfg(test)]
-pub fn solve_with_counter<B: Board>(board: B) -> (Option<B>, u64) {
+pub fn solve_with_counter<B: Board>(pieces: &[PlacedPiece]) -> (Option<Vec<PlacedPiece>>, u64) {
     let mut counter = SimpleIterationCounter(0);
-    let b = solve_impl(board, &mut counter);
+    let b = solve_impl::<B, SimpleIterationCounter>(pieces, &mut counter);
     (b, counter.get())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::board::BinaryBoard;
+    use crate::board::{BinaryBoard, DisplayBoard};
     use crate::puzzles::*;
 
     #[test]
@@ -186,19 +203,39 @@ mod tests {
 
     #[test]
     fn test_49() {
-        let board = BinaryBoard::from_piece_list(&*PIECES_49).unwrap();
-        let (b, c) = solve_with_counter(board);
-        assert!(b.is_some());
-        assert_eq!(b.unwrap().first_empty_cell(0), None);
+        let (pieces, c) = solve_with_counter::<BinaryBoard>(&*PIECES_49);
+        assert!(pieces.is_some());
+        assert_eq!(
+            BinaryBoard::from_placed_piece_list(&pieces.clone().unwrap())
+                .unwrap()
+                .first_empty_cell(0),
+            None
+        );
+        assert_eq!(
+            DisplayBoard::from_placed_piece_list(&pieces.unwrap())
+                .unwrap()
+                .first_empty_cell(0),
+            None
+        );
         assert_eq!(c, 787);
     }
 
     #[test]
     fn test_117() {
-        let board = BinaryBoard::from_piece_list(&*PIECES_117).unwrap();
-        let (b, c) = solve_with_counter(board);
-        assert!(b.is_some());
-        assert_eq!(b.unwrap().first_empty_cell(0), None);
+        let (pieces, c) = solve_with_counter::<BinaryBoard>(&*PIECES_117);
+        assert!(pieces.is_some());
+        assert_eq!(
+            BinaryBoard::from_placed_piece_list(&pieces.clone().unwrap())
+                .unwrap()
+                .first_empty_cell(0),
+            None
+        );
+        assert_eq!(
+            DisplayBoard::from_placed_piece_list(&pieces.unwrap())
+                .unwrap()
+                .first_empty_cell(0),
+            None
+        );
         assert_eq!(c, 2930368);
     }
 }

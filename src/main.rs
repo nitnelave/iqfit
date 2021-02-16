@@ -5,12 +5,12 @@ mod solver;
 use board::*;
 
 fn main() {
-    let board = DisplayBoard::from_piece_list(&*puzzles::PIECES_117).unwrap();
+    let board = DisplayBoard::from_placed_piece_list(&*puzzles::PIECES_117).unwrap();
     println!("{}", board);
-    let solved_board = solver::solve(board);
-    if let Some(b) = solved_board {
+    let solution = solver::solve::<DisplayBoard>(&*puzzles::PIECES_117);
+    if let Some(pieces) = solution {
         println!("Solving successful!");
-        println!("{}", b);
+        println!("{}", DisplayBoard::from_placed_piece_list(&pieces).unwrap());
     } else {
         println!("Solving failed...");
     }

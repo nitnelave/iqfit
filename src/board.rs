@@ -11,16 +11,31 @@ pub use display_board::DisplayBoard;
 use display_board_placement_info::DisplayBoardPlacementInfo;
 
 /// Represents a board on which you can place pieces.
-pub trait Board {
+pub trait Board: Sized + Copy + Default {
     /// Try to place a piece and return whether it succeeded.
     /// If it fails the board is left as-is.
     /// If it succeeds, the board is updated with the piece, and the piece is added to the
     /// piece_list.
-    fn place_piece(&mut self, piece: PlacedPiece) -> bool;
-    /// Remove the last piece that was placed, and update the board.
-    fn pop_piece(&mut self);
-    /// Give the list of pieces currently placed on the board.
-    fn piece_list(&self) -> &Vec<PlacedPiece>;
+    fn can_place_piece(&self, piece: PlacedPiece) -> bool;
+    fn with_piece(self, piece: PlacedPiece) -> Self;
+    /// Try to place a piece in the first empty spot in the top left and return whether it
+    /// succeeded.
+    fn place_piece_top_left(&mut self, piece: Piece) -> bool {
+        if let Some(index) = self.first_empty_cell(0) {
+            let placed_piece = PlacedPiece {
+                top_left: index,
+                piece,
+            };
+            if self.can_place_piece(placed_piece) {
+                *self = self.with_piece(placed_piece);
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        }
+    }
     /// Find the first cell that hasn't been covered by a piece yet.
     /// `lower_bound` is the first cell that might be empty, indexed from the top left.
     fn first_empty_cell(&self, lower_bound: u8) -> Option<u8>;
@@ -30,6 +45,25 @@ pub trait Board {
     fn check_common_failures(&self, index: u8) -> bool;
     /// Create an empty board.
     fn empty() -> Self;
+    fn from_piece_list(pieces: &[Piece]) -> Option<Self> {
+        let mut board = Self::default();
+        for p in pieces {
+            if !board.place_piece_top_left(*p) {
+                return None;
+            }
+        }
+        Some(board)
+    }
+    fn from_placed_piece_list(pieces: &[PlacedPiece]) -> Option<Self> {
+        let mut board = Self::empty();
+        for p in pieces {
+            if !board.can_place_piece(*p) {
+                return None;
+            }
+            board = board.with_piece(*p);
+        }
+        Some(board)
+    }
 }
 
 #[inline]
@@ -79,9 +113,9 @@ mod tests {
     where
         B: Board,
     {
-        let mut board = DisplayBoard::empty();
+        let board = DisplayBoard::empty();
         // Too far right.
-        assert!(!board.place_piece(PlacedPiece {
+        assert!(!board.can_place_piece(PlacedPiece {
             piece: Piece::new()
                 .with_color(Color::Pink)
                 .with_face(Face::A)
@@ -89,7 +123,7 @@ mod tests {
             top_left: 7,
         }));
         // Too low.
-        assert!(!board.place_piece(PlacedPiece {
+        assert!(!board.can_place_piece(PlacedPiece {
             piece: Piece::new()
                 .with_color(Color::Pink)
                 .with_face(Face::A)
@@ -97,7 +131,7 @@ mod tests {
             top_left: 42,
         }));
         // Too far left.
-        assert!(!board.place_piece(PlacedPiece {
+        assert!(!board.can_place_piece(PlacedPiece {
             piece: Piece::new()
                 .with_color(Color::Pink)
                 .with_face(Face::A)
@@ -114,15 +148,17 @@ mod tests {
         B: Board,
     {
         let mut board = DisplayBoard::empty();
-        assert!(board.place_piece(PlacedPiece {
+        let pink_piece = PlacedPiece {
             piece: Piece::new()
                 .with_color(Color::Pink)
                 .with_face(Face::A)
                 .with_orientation(Orientation::Right),
             top_left: 22,
-        }));
+        };
+        assert!(board.can_place_piece(pink_piece));
+        board = board.with_piece(pink_piece);
         // Intersects.
-        assert!(!board.place_piece(PlacedPiece {
+        assert!(!board.can_place_piece(PlacedPiece {
             piece: Piece::new()
                 .with_color(Color::Yellow)
                 .with_face(Face::B)
@@ -131,7 +167,7 @@ mod tests {
         }));
 
         // Intersects.
-        assert!(!board.place_piece(PlacedPiece {
+        assert!(!board.can_place_piece(PlacedPiece {
             piece: Piece::new()
                 .with_color(Color::Yellow)
                 .with_face(Face::B)
@@ -139,18 +175,14 @@ mod tests {
             top_left: 4,
         }));
 
-        assert_eq!(board.piece_list().len(), 1);
-
         // Doesn't intersect.
-        assert!(board.place_piece(PlacedPiece {
+        assert!(board.can_place_piece(PlacedPiece {
             piece: Piece::new()
                 .with_color(Color::Yellow)
                 .with_face(Face::B)
                 .with_orientation(Orientation::Up),
             top_left: 0,
         }));
-
-        assert_eq!(board.piece_list().len(), 2);
     }
 
     #[test]
@@ -233,10 +265,10 @@ mod tests {
             },
         ];
         for p in pieces.iter() {
-            assert!(board.place_piece(*p));
+            assert!(board.can_place_piece(*p));
+            board = board.with_piece(*p);
         }
-        assert_eq!(*board.piece_list(), pieces);
-        let new_board = DisplayBoard::from_piece_list(&pieces);
+        let new_board = DisplayBoard::from_placed_piece_list(&pieces);
         assert!(new_board.is_some());
         assert_eq!(board, new_board.unwrap());
     }
