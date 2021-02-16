@@ -26,6 +26,8 @@ pub trait Board {
     fn first_empty_cell(&self, lower_bound: u8) -> Option<u8>;
     /// Check if a given cell is empty;
     fn is_cell_empty(&self, index: u8) -> bool;
+    /// Check for common failure patterns.
+    fn check_common_failures(&self, index: u8) -> bool;
     /// Create an empty board.
     fn empty() -> Self;
 }

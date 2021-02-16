@@ -90,7 +90,7 @@ fn solve_rec<B: Board, C: IterationCounter>(
         return true;
     }
     let index = index.unwrap();
-    if !board.is_cell_empty(index + 1) && !board.is_cell_empty(index + 10) {
+    if board.check_common_failures(index) {
         return false;
     }
     let mut piece = PlacedPiece {
@@ -118,14 +118,7 @@ fn solve_rec<B: Board, C: IterationCounter>(
                 if board.place_piece(piece) {
                     let num_a = num_face_a + (*face == Face::A) as u8;
                     let num_b = num_face_b + (*face == Face::B) as u8;
-                    if solve_rec(
-                        board,
-                        next_colors,
-                        index + 1,
-                        num_a,
-                        num_b,
-                        counter,
-                    ) {
+                    if solve_rec(board, next_colors, index + 1, num_a, num_b, counter) {
                         return true;
                     }
                     board.pop_piece();
@@ -206,6 +199,6 @@ mod tests {
         let (b, c) = solve_with_counter(board);
         assert!(b.is_some());
         assert_eq!(b.unwrap().first_empty_cell(0), None);
-        assert_eq!(c, 3043896);
+        assert_eq!(c, 2930368);
     }
 }

@@ -37,6 +37,17 @@ impl Board for DisplayBoard {
     fn is_cell_empty(&self, index: u8) -> bool {
         self.cells[index as usize].is_none()
     }
+    fn check_common_failures(&self, index: u8) -> bool {
+        if !self.is_cell_empty(index + 10) {
+            if index % 10 == 9 || !self.is_cell_empty(index + 1) {
+                return true;
+            }
+            if !self.is_cell_empty(index + 11) && !self.is_cell_empty(index + 2) {
+                return true;
+            }
+        }
+        false
+    }
     fn piece_list(&self) -> &Vec<PlacedPiece> {
         &self.placed_pieces
     }
