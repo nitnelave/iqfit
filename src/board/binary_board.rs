@@ -1,8 +1,11 @@
 use crate::board::*;
 
+/// Model the board as a bitfield of empty cells.
 #[derive(Debug, PartialEq, Eq)]
 pub struct BinaryBoard {
     placed_pieces: Vec<PlacedPiece>,
+    /// Bitfield of empty cells. Each bit corresponds to a specific cell, starting from the top
+    /// left and going row by row.
     cells: u64,
 }
 
@@ -58,6 +61,8 @@ impl BinaryBoard {
         Some(board)
     }
 
+    /// Find the first bit left unset in the bitfield.
+    /// This uses a lookup table to get the first unset bit in a byte efficiently.
     fn get_first_unset_bit(&self, lower_bound: u8) -> u8 {
         let mut first_empty_cell_byte_index = lower_bound / 8;
         if self.cells & (1 << lower_bound) == 0 {

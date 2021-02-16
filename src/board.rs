@@ -10,11 +10,21 @@ pub use display_board::DisplayBoard;
 
 use display_board_placement_info::DisplayBoardPlacementInfo;
 
+/// Represents a board on which you can place pieces.
 pub trait Board {
+    /// Try to place a piece and return whether it succeeded.
+    /// If it fails the board is left as-is.
+    /// If it succeeds, the board is updated with the piece, and the piece is added to the
+    /// piece_list.
     fn place_piece(&mut self, piece: PlacedPiece) -> bool;
+    /// Remove the last piece that was placed, and update the board.
     fn pop_piece(&mut self);
+    /// Give the list of pieces currently placed on the board.
     fn piece_list(&self) -> &Vec<PlacedPiece>;
+    /// Find the first cell that hasn't been covered by a piece yet.
+    /// `lower_bound` is the first cell that might be empty, indexed from the top left.
     fn first_empty_cell(&self, lower_bound: u8) -> Option<u8>;
+    /// Create an empty board.
     fn empty() -> Self;
 }
 
