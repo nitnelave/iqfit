@@ -98,6 +98,7 @@ fn solve_rec<B: Board, C: IterationCounter>(
         if !colors_left.contains(*c) {
             continue;
         }
+        let next_colors = colors_left.without_color(*c);
         piece.piece.set_color(*c);
         for face in FACE_LIST.iter() {
             if *face == Face::A {
@@ -116,7 +117,7 @@ fn solve_rec<B: Board, C: IterationCounter>(
                     let num_b = num_face_b + (*face == Face::B) as u8;
                     if solve_rec(
                         board,
-                        colors_left.without_color(*c),
+                        next_colors,
                         index + 1,
                         num_a,
                         num_b,

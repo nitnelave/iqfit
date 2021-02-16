@@ -11,10 +11,10 @@ pub struct BinaryBoard {
 
 impl Board for BinaryBoard {
     fn place_piece(&mut self, piece: PlacedPiece) -> bool {
-        if !is_valid_piece_placement(piece) {
+        let info = get_placement_info(piece.piece);
+        if !is_valid_piece_placement(piece, info) {
             return false;
         }
-        let info = get_placement_info(piece.piece);
         let binary_piece = info.as_binary << piece.top_left;
         if self.cells & binary_piece != 0 {
             return false;
@@ -34,7 +34,7 @@ impl Board for BinaryBoard {
     }
     fn empty() -> Self {
         BinaryBoard {
-            placed_pieces: Vec::new(),
+            placed_pieces: Vec::with_capacity(10),
             cells: 0,
         }
     }

@@ -9,10 +9,10 @@ pub struct DisplayBoard {
 
 impl Board for DisplayBoard {
     fn place_piece(&mut self, piece: PlacedPiece) -> bool {
-        if !is_valid_piece_placement(piece) {
+        let info = get_placement_info(piece.piece);
+        if !is_valid_piece_placement(piece, info) {
             return false;
         }
-        let info = get_placement_info(piece.piece);
         for i in 0..info.num_balls as usize {
             let shift = info.balls[i];
             if self.cell_at(piece.top_left + shift).is_some() {

@@ -28,13 +28,14 @@ pub trait Board {
     fn empty() -> Self;
 }
 
+#[inline]
 const fn get_placement_info(piece: Piece) -> &'static DisplayBoardPlacementInfo {
     display_board_placement_info_gen::PLACEMENT_INFO[piece.as_byte() as usize]
 }
 
-const fn is_valid_piece_placement(piece: PlacedPiece) -> bool {
+#[inline]
+const fn is_valid_piece_placement(piece: PlacedPiece, info: &DisplayBoardPlacementInfo) -> bool {
     let (top_left_row, top_left_col) = piece.top_left_coords();
-    let info = get_placement_info(piece.piece);
     top_left_row + info.height < 5
         && top_left_col + info.width_right < 10
         && top_left_col >= info.width_left
