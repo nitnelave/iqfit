@@ -60,6 +60,9 @@ impl BinaryBoard {
 
     fn get_first_unset_bit(&self, lower_bound: u8) -> u8 {
         let mut first_empty_cell_byte_index = lower_bound / 8;
+        if self.cells & (1 << lower_bound) == 0 {
+            return lower_bound;
+        }
         let cell_bytes = self.cells.to_le_bytes();
         loop {
             let first_unset_bit =
