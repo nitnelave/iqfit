@@ -10,3 +10,4 @@ Rust solver for the IQ Fit puzzle game
 | Face distribution cutoff | dba15d3 | 22 us     | 99 ms      |
 | Binary board             | 3cfb02a | 19 us     | 84 ms      |
 | Empty cell lookup table  | c2106d2 | 19 us     | 84 ms      |
+| Bitfield color set       | 1676d54 | 5 us      | 29 ms      |
