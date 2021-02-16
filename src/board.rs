@@ -24,6 +24,8 @@ pub trait Board {
     /// Find the first cell that hasn't been covered by a piece yet.
     /// `lower_bound` is the first cell that might be empty, indexed from the top left.
     fn first_empty_cell(&self, lower_bound: u8) -> Option<u8>;
+    /// Check if a given cell is empty;
+    fn is_cell_empty(&self, index: u8) -> bool;
     /// Create an empty board.
     fn empty() -> Self;
 }

@@ -39,6 +39,10 @@ impl Board for BinaryBoard {
         }
     }
 
+    fn is_cell_empty(&self, index: u8) -> bool {
+        self.cells & (1 << index) == 0
+    }
+
     fn first_empty_cell(&self, lower_bound: u8) -> Option<u8> {
         let first_unset_bit = self.get_first_unset_bit(lower_bound);
         if first_unset_bit == 50 {

@@ -34,6 +34,9 @@ impl Board for DisplayBoard {
             *self.cell_at(piece.top_left + shift) = None;
         }
     }
+    fn is_cell_empty(&self, index: u8) -> bool {
+        self.cells[index as usize].is_none()
+    }
     fn piece_list(&self) -> &Vec<PlacedPiece> {
         &self.placed_pieces
     }

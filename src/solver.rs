@@ -90,6 +90,9 @@ fn solve_rec<B: Board, C: IterationCounter>(
         return true;
     }
     let index = index.unwrap();
+    if !board.is_cell_empty(index + 1) && !board.is_cell_empty(index + 10) {
+        return false;
+    }
     let mut piece = PlacedPiece {
         piece: Piece::new(),
         top_left: index,
@@ -194,7 +197,7 @@ mod tests {
         let (b, c) = solve_with_counter(board);
         assert!(b.is_some());
         assert_eq!(b.unwrap().first_empty_cell(0), None);
-        assert_eq!(c, 955);
+        assert_eq!(c, 787);
     }
 
     #[test]
@@ -203,6 +206,6 @@ mod tests {
         let (b, c) = solve_with_counter(board);
         assert!(b.is_some());
         assert_eq!(b.unwrap().first_empty_cell(0), None);
-        assert_eq!(c, 4266088);
+        assert_eq!(c, 3043896);
     }
 }
