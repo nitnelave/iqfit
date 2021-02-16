@@ -24,6 +24,35 @@ const ORIENTATION_LIST: [Orientation; 4] = [
     Orientation::Left,
 ];
 
+pub trait IterationCounter {
+    fn increment(&mut self);
+    fn get(&self) -> u64;
+}
+
+struct NoOpIterationCounter {}
+
+impl IterationCounter for NoOpIterationCounter {
+    #[inline]
+    fn increment(&mut self) {}
+    #[inline]
+    fn get(&self) -> u64 {
+        0
+    }
+}
+
+struct SimpleIterationCounter(u64);
+
+impl IterationCounter for SimpleIterationCounter {
+    #[inline]
+    fn increment(&mut self) {
+        self.0 += 1;
+    }
+    #[inline]
+    fn get(&self) -> u64 {
+        self.0
+    }
+}
+
 fn get_colorset() -> HashSet<Color> {
     let mut pieces_left = HashSet::<Color>::with_capacity(10);
     for c in COLOR_LIST.iter() {
@@ -32,12 +61,13 @@ fn get_colorset() -> HashSet<Color> {
     pieces_left
 }
 
-fn solve_rec<B: Board>(
+fn solve_rec<B: Board, C: IterationCounter>(
     board: &mut B,
     colors_left: &mut HashSet<Color>,
     empty_index_lower_bound: u8,
     num_face_a: u8,
     num_face_b: u8,
+    counter: &mut C,
 ) -> bool {
     let index = board.first_empty_cell(empty_index_lower_bound);
     if index.is_none() {
@@ -64,10 +94,11 @@ fn solve_rec<B: Board>(
             piece.piece.set_face(*face);
             for orientation in ORIENTATION_LIST.iter() {
                 piece.piece.set_orientation(*orientation);
+                counter.increment();
                 if board.place_piece(piece) {
                     let num_a = num_face_a + (*face == Face::A) as u8;
                     let num_b = num_face_b + (*face == Face::B) as u8;
-                    if solve_rec(board, colors_left, index + 1, num_a, num_b) {
+                    if solve_rec(board, colors_left, index + 1, num_a, num_b, counter) {
                         return true;
                     }
                     board.pop_piece();
@@ -79,7 +110,7 @@ fn solve_rec<B: Board>(
     false
 }
 
-pub fn solve<B: Board>(mut board: B) -> Option<B> {
+fn solve_impl<B: Board, C: IterationCounter>(mut board: B, counter: &mut C) -> Option<B> {
     let mut colors_left = get_colorset();
     for p in board.piece_list() {
         assert!(colors_left.remove(&p.piece.color()));
@@ -91,9 +122,53 @@ pub fn solve<B: Board>(mut board: B) -> Option<B> {
         .count() as u8;
     let num_face_b = board.piece_list().len() as u8 - num_face_a;
 
-    if solve_rec(&mut board, &mut colors_left, 0, num_face_a, num_face_b) {
+    if solve_rec(
+        &mut board,
+        &mut colors_left,
+        0,
+        num_face_a,
+        num_face_b,
+        counter,
+    ) {
         Some(board)
     } else {
         None
+    }
+}
+
+pub fn solve<B: Board>(board: B) -> Option<B> {
+    let mut counter = NoOpIterationCounter {};
+    solve_impl(board, &mut counter)
+}
+
+#[cfg(test)]
+pub fn solve_with_counter<B: Board>(board: B) -> (Option<B>, u64) {
+    let mut counter = SimpleIterationCounter(0);
+    let b = solve_impl(board, &mut counter);
+    (b, counter.get())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::board::BinaryBoard;
+    use crate::puzzles::*;
+
+    #[test]
+    fn test_49() {
+        let board = BinaryBoard::from_piece_list(&*PIECES_49).unwrap();
+        let (b, c) = solve_with_counter(board);
+        assert!(b.is_some());
+        assert_eq!(b.unwrap().first_empty_cell(0), None);
+        assert_eq!(c, 955);
+    }
+
+    #[test]
+    fn test_117() {
+        let board = BinaryBoard::from_piece_list(&*PIECES_117).unwrap();
+        let (b, c) = solve_with_counter(board);
+        assert!(b.is_some());
+        assert_eq!(b.unwrap().first_empty_cell(0), None);
+        assert_eq!(c, 4266088);
     }
 }
