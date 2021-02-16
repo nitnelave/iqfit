@@ -1,6 +1,5 @@
 use crate::board::Board;
 use crate::pieces::*;
-use std::collections::HashSet;
 
 const COLOR_LIST: [Color; 10] = [
     Color::Yellow,
@@ -53,17 +52,34 @@ impl IterationCounter for SimpleIterationCounter {
     }
 }
 
-fn get_colorset() -> HashSet<Color> {
-    let mut pieces_left = HashSet::<Color>::with_capacity(10);
-    for c in COLOR_LIST.iter() {
-        pieces_left.insert(*c);
+/// A set of colors, starting full, and getting progressively empty.
+#[derive(Copy, Clone)]
+struct ColorSet(pub u16);
+
+impl ColorSet {
+    pub fn full() -> Self {
+        ColorSet(!0)
     }
-    pieces_left
+
+    pub fn remove(&mut self, c: Color) -> bool {
+        let res = self.contains(c);
+        self.0 &= !(1 << (c as u8));
+        res
+    }
+
+    pub fn contains(&self, c: Color) -> bool {
+        (self.0 & 1 << (c as u8)) != 0
+    }
+
+    pub fn without_color(mut self, c: Color) -> Self {
+        self.remove(c);
+        self
+    }
 }
 
 fn solve_rec<B: Board, C: IterationCounter>(
     board: &mut B,
-    colors_left: &mut HashSet<Color>,
+    colors_left: ColorSet,
     empty_index_lower_bound: u8,
     num_face_a: u8,
     num_face_b: u8,
@@ -79,7 +95,7 @@ fn solve_rec<B: Board, C: IterationCounter>(
         top_left: index,
     };
     for c in COLOR_LIST.iter() {
-        if !colors_left.remove(c) {
+        if !colors_left.contains(*c) {
             continue;
         }
         piece.piece.set_color(*c);
@@ -98,22 +114,28 @@ fn solve_rec<B: Board, C: IterationCounter>(
                 if board.place_piece(piece) {
                     let num_a = num_face_a + (*face == Face::A) as u8;
                     let num_b = num_face_b + (*face == Face::B) as u8;
-                    if solve_rec(board, colors_left, index + 1, num_a, num_b, counter) {
+                    if solve_rec(
+                        board,
+                        colors_left.without_color(*c),
+                        index + 1,
+                        num_a,
+                        num_b,
+                        counter,
+                    ) {
                         return true;
                     }
                     board.pop_piece();
                 }
             }
         }
-        colors_left.insert(*c);
     }
     false
 }
 
 fn solve_impl<B: Board, C: IterationCounter>(mut board: B, counter: &mut C) -> Option<B> {
-    let mut colors_left = get_colorset();
+    let mut colors_left = ColorSet::full();
     for p in board.piece_list() {
-        assert!(colors_left.remove(&p.piece.color()));
+        assert!(colors_left.remove(p.piece.color()));
     }
     let num_face_a = board
         .piece_list()
@@ -122,14 +144,7 @@ fn solve_impl<B: Board, C: IterationCounter>(mut board: B, counter: &mut C) -> O
         .count() as u8;
     let num_face_b = board.piece_list().len() as u8 - num_face_a;
 
-    if solve_rec(
-        &mut board,
-        &mut colors_left,
-        0,
-        num_face_a,
-        num_face_b,
-        counter,
-    ) {
+    if solve_rec(&mut board, colors_left, 0, num_face_a, num_face_b, counter) {
         Some(board)
     } else {
         None
@@ -153,6 +168,24 @@ mod tests {
     use super::*;
     use crate::board::BinaryBoard;
     use crate::puzzles::*;
+
+    #[test]
+    fn test_color_to_int() {
+        assert_eq!(Color::Yellow as u8, 0);
+        assert_eq!(Color::Pink as u8, 3);
+    }
+
+    #[test]
+    fn test_color_hasher() {
+        let mut set = ColorSet::full();
+        assert_eq!(set.0, 0b1111111111111111);
+        assert_eq!(set.without_color(Color::Pink).0, 0b1111111111110111);
+        assert_eq!(set.0, 0b1111111111111111);
+        set.remove(Color::Pink);
+        assert_eq!(set.0, 0b1111111111110111);
+        assert!(set.contains(Color::Yellow));
+        assert!(!set.contains(Color::Pink));
+    }
 
     #[test]
     fn test_49() {

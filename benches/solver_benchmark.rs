@@ -1,7 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use iqfit_solver::board::BinaryBoard;
-use iqfit_solver::puzzles::*;
 use iqfit_solver::pieces::*;
+use iqfit_solver::puzzles::*;
 use iqfit_solver::solver;
 
 fn solve(pieces: &[PlacedPiece]) -> BinaryBoard {
