@@ -36,7 +36,7 @@ impl Board for BinaryBoard {
     }
 
     #[inline]
-    fn check_common_failures(&self, _index: u8) -> bool {
+    fn check_common_failures(&self) -> bool {
         let n = self.cells;
         // Prepare the following pattern:
         //  #

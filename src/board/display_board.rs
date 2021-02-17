@@ -35,7 +35,8 @@ impl Board for DisplayBoard {
             self.cells[index as usize].is_none()
         }
     }
-    fn check_common_failures(&self, index: u8) -> bool {
+    fn check_common_failures(&self) -> bool {
+        let index = self.first_empty_cell(0).unwrap();
         if !self.is_cell_empty(index + 10) {
             if index % 10 == 9 || !self.is_cell_empty(index + 1) {
                 return true;

@@ -42,7 +42,7 @@ pub trait Board: Sized + Copy + Default {
     /// Check if a given cell is empty;
     fn is_cell_empty(&self, index: u8) -> bool;
     /// Check for common failure patterns.
-    fn check_common_failures(&self, index: u8) -> bool;
+    fn check_common_failures(&self) -> bool;
     /// Create an empty board.
     fn empty() -> Self;
     fn from_piece_list(pieces: &[Piece]) -> Option<Self> {

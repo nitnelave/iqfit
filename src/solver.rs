@@ -132,14 +132,14 @@ fn solve_rec<B: Board + Copy, C: IterationCounter, F: FacePolicy>(
     face_policy: F,
     counter: &mut C,
 ) -> Option<Vec<PlacedPiece>> {
+    if board.check_common_failures() {
+        return None;
+    }
     let index = board.first_empty_cell(empty_index_lower_bound);
     if index.is_none() {
         return Some(Vec::with_capacity(10));
     }
     let index = index.unwrap();
-    if board.check_common_failures(index) {
-        return None;
-    }
     let mut piece = PlacedPiece {
         piece: Piece::new(),
         top_left: index,
