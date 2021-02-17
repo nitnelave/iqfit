@@ -80,12 +80,56 @@ impl ColorSet {
     }
 }
 
-fn solve_rec<B: Board + Copy, C: IterationCounter>(
+trait FacePolicy: Copy {
+    fn can_add_face(&self, f: Face) -> bool;
+    fn with_face(self, f: Face) -> Self;
+    fn from_placed_pieces(pieces: &[PlacedPiece]) -> Self;
+}
+
+#[derive(Copy, Clone)]
+struct TenPieceFacePolicy {
+    num_face_a: u8,
+    num_face_b: u8,
+}
+
+impl FacePolicy for TenPieceFacePolicy {
+    #[inline]
+    fn can_add_face(&self, f: Face) -> bool {
+        match f {
+            Face::A => {
+                if self.num_face_a == 6 {
+                    return false;
+                }
+            }
+            Face::B => {
+                if self.num_face_b == 4 {
+                    return false;
+                }
+            }
+        };
+        true
+    }
+    #[inline]
+    fn with_face(mut self, f: Face) -> Self {
+        self.num_face_a += (f == Face::A) as u8;
+        self.num_face_b += (f == Face::B) as u8;
+        self
+    }
+    fn from_placed_pieces(pieces: &[PlacedPiece]) -> Self {
+        let num_face_a = pieces.iter().filter(|p| p.piece.face() == Face::A).count() as u8;
+        let num_face_b = pieces.len() as u8 - num_face_a;
+        TenPieceFacePolicy {
+            num_face_a,
+            num_face_b,
+        }
+    }
+}
+
+fn solve_rec<B: Board + Copy, C: IterationCounter, F: FacePolicy>(
     board: B,
     colors_left: ColorSet,
     empty_index_lower_bound: u8,
-    num_face_a: u8,
-    num_face_b: u8,
+    face_policy: F,
     counter: &mut C,
 ) -> Option<Vec<PlacedPiece>> {
     let index = board.first_empty_cell(empty_index_lower_bound);
@@ -107,11 +151,7 @@ fn solve_rec<B: Board + Copy, C: IterationCounter>(
         let next_colors = colors_left.without_color(*c);
         piece.piece.set_color(*c);
         for face in FACE_LIST.iter() {
-            if *face == Face::A {
-                if num_face_a == 6 {
-                    continue;
-                }
-            } else if num_face_b == 4 {
+            if !face_policy.can_add_face(*face) {
                 continue;
             }
             piece.piece.set_face(*face);
@@ -119,14 +159,11 @@ fn solve_rec<B: Board + Copy, C: IterationCounter>(
                 piece.piece.set_orientation(*orientation);
                 counter.increment();
                 if board.can_place_piece(piece) {
-                    let num_a = num_face_a + (*face == Face::A) as u8;
-                    let num_b = num_face_b + (*face == Face::B) as u8;
                     if let Some(mut pieces) = solve_rec(
                         board.with_piece(piece),
                         next_colors,
                         index + 1,
-                        num_a,
-                        num_b,
+                        face_policy.with_face(*face),
                         counter,
                     ) {
                         pieces.push(piece);
@@ -139,7 +176,7 @@ fn solve_rec<B: Board + Copy, C: IterationCounter>(
     None
 }
 
-fn solve_impl<B: Board, C: IterationCounter>(
+fn solve_impl<B: Board, C: IterationCounter, F: FacePolicy>(
     pieces: &[PlacedPiece],
     counter: &mut C,
 ) -> Option<Vec<PlacedPiece>> {
@@ -150,12 +187,13 @@ fn solve_impl<B: Board, C: IterationCounter>(
         debug_assert!(board.can_place_piece(*p));
         board = board.with_piece(*p);
     }
-    let num_face_a = pieces.iter().filter(|p| p.piece.face() == Face::A).count() as u8;
-    let num_face_b = pieces.len() as u8 - num_face_a;
-
-    if let Some(mut pieces_solution) =
-        solve_rec(board, colors_left, 0, num_face_a, num_face_b, counter)
-    {
+    if let Some(mut pieces_solution) = solve_rec(
+        board,
+        colors_left,
+        0,
+        F::from_placed_pieces(pieces),
+        counter,
+    ) {
         for p in pieces {
             pieces_solution.push(*p);
         }
@@ -167,13 +205,13 @@ fn solve_impl<B: Board, C: IterationCounter>(
 
 pub fn solve<B: Board>(pieces: &[PlacedPiece]) -> Option<Vec<PlacedPiece>> {
     let mut counter = NoOpIterationCounter {};
-    solve_impl::<B, NoOpIterationCounter>(pieces, &mut counter)
+    solve_impl::<B, NoOpIterationCounter, TenPieceFacePolicy>(pieces, &mut counter)
 }
 
 #[cfg(test)]
 pub fn solve_with_counter<B: Board>(pieces: &[PlacedPiece]) -> (Option<Vec<PlacedPiece>>, u64) {
     let mut counter = SimpleIterationCounter(0);
-    let b = solve_impl::<B, SimpleIterationCounter>(pieces, &mut counter);
+    let b = solve_impl::<B, SimpleIterationCounter, TenPieceFacePolicy>(pieces, &mut counter);
     (b, counter.get())
 }
 
