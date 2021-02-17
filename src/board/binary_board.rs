@@ -36,12 +36,89 @@ impl Board for BinaryBoard {
     }
 
     #[inline]
-    fn check_common_failures(&self, index: u8) -> bool {
-        const PATTERN_2: u64 = 0b110000000100;
-        if !self.is_cell_empty(index + 10) && (index % 10 == 9 || !self.is_cell_empty(index + 1)) {
-            return true;
-        }
-        (self.cells >> index) & PATTERN_2 == PATTERN_2
+    fn check_common_failures(&self, _index: u8) -> bool {
+        let n = self.cells;
+        // Prepare the following pattern:
+        //  #
+        // #.
+        let base_pattern = n & (n << 9) & (!n << 10);
+        // Look for the following pattern:
+        //  #
+        // #.#
+        //  #
+        let single_hole = (base_pattern & (n << 20) & (n << 11)) != 0;
+        // Prepare the following pattern:
+        //  ##
+        // #..
+        //  #
+        let base_double_pattern = base_pattern & (n << 20) & (!n << 11) & (n << 1);
+        // Look for the following pattern:
+        //  ##
+        // #..#
+        //  ##
+        let double_hole = (base_double_pattern & (n << 12) & (n << 21)) != 0;
+        // Look for the following pattern:
+        //  ###
+        // #...#
+        //  ###
+        let triple_hole =
+            (base_double_pattern & (!n << 12) & (n << 21) & (n << 3) & (n << 22) & (n << 13)) != 0;
+        // Look for the following pattern:
+        //  ##
+        // #..#
+        //  #.#
+        //   #
+        let triple_hole_l =
+            (base_double_pattern & (n << 12) & (!n << 21) & (n << 31) & (n << 22) & (n << 13)) != 0;
+        // Look for the following pattern:
+        //  ##
+        // #..#
+        // #.#
+        //  #
+        let triple_hole_l2 = (base_pattern
+            & (n << 1)
+            & (!n << 11)
+            & (n << 12)
+            & (n << 19)
+            & (!n << 20)
+            & (n << 21)
+            & (n << 30))
+            != 0;
+        // Look for the following pattern:
+        //  #
+        // #.#
+        // #..#
+        //  ##
+        let triple_hole_l3 = (base_pattern
+            & (n << 11)
+            & (n << 19)
+            & (!n << 20)
+            & (!n << 21)
+            & (n << 22)
+            & (n << 30)
+            & (n << 31))
+            != 0;
+        // Look for the following pattern:
+        //   #
+        //  #.#
+        // #..#
+        //  ##
+        let triple_hole_l4 = (base_pattern
+            & (n << 11)
+            & (n << 18)
+            & (!n << 19)
+            & (!n << 20)
+            & (n << 21)
+            & (n << 29)
+            & (n << 30))
+            != 0;
+        single_hole
+            || double_hole
+            || triple_hole
+            || triple_hole_l
+            || triple_hole_l2
+            || triple_hole_l3
+            || triple_hole_l4
     }
 
     #[inline]

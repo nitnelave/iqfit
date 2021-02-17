@@ -217,7 +217,7 @@ mod tests {
                 .first_empty_cell(0),
             None
         );
-        assert_eq!(c, 787);
+        assert_eq!(c, 471);
     }
 
     #[test]
@@ -236,6 +236,6 @@ mod tests {
                 .first_empty_cell(0),
             None
         );
-        assert_eq!(c, 2930368);
+        assert_eq!(c, 932400);
     }
 }
