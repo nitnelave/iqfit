@@ -9,6 +9,7 @@ pub struct BinaryBoard {
 }
 
 impl Board for BinaryBoard {
+    #[inline]
     fn can_place_piece(&self, piece: PlacedPiece) -> bool {
         let info = get_placement_info(piece.piece);
         let binary_piece = info.as_binary << piece.top_left;
@@ -17,11 +18,19 @@ impl Board for BinaryBoard {
         }
         is_valid_piece_placement(piece, info)
     }
+    #[inline]
     fn with_piece(mut self, piece: PlacedPiece) -> Self {
         let info = get_placement_info(piece.piece);
         let binary_piece = info.as_binary << piece.top_left;
         self.cells |= binary_piece;
         self
+    }
+    fn maybe_with_piece(&self, piece: PlacedPiece) -> Option<Self> {
+        if self.can_place_piece(piece) {
+            Some(self.with_piece(piece))
+        } else {
+            None
+        }
     }
     fn empty() -> Self {
         BinaryBoard {
@@ -62,7 +71,8 @@ impl Board for BinaryBoard {
         // #.#
         // #.#
         //  #
-        let double_hole_vertical = (base_pattern & (n << 11) & (!n << 20) & (n << 19) & (n << 21) & (n << 30)) != 0;
+        let double_hole_vertical =
+            (base_pattern & (n << 11) & (!n << 20) & (n << 19) & (n << 21) & (n << 30)) != 0;
         // Look for the following pattern:
         //  ###
         // #...#

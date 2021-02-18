@@ -145,9 +145,7 @@ impl FacePolicy for NinePieceFacePolicy {
     }
     fn from_placed_pieces(pieces: &[PlacedPiece]) -> Self {
         let num_face_a = pieces.iter().filter(|p| p.piece.face() == Face::A).count() as u8;
-        NinePieceFacePolicy {
-            num_face_a,
-        }
+        NinePieceFacePolicy { num_face_a }
     }
 }
 
@@ -184,9 +182,9 @@ fn solve_rec<B: Board + Copy, C: IterationCounter, F: FacePolicy>(
             for orientation in ORIENTATION_LIST.iter() {
                 piece.piece.set_orientation(*orientation);
                 counter.increment();
-                if board.can_place_piece(piece) {
+                if let Some(new_board) = board.maybe_with_piece(piece) {
                     if let Some(mut pieces) = solve_rec(
-                        board.with_piece(piece),
+                        new_board,
                         next_colors,
                         index + 1,
                         face_policy.with_face(*face),

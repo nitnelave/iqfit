@@ -18,6 +18,7 @@ pub trait Board: Sized + Copy + Default {
     /// piece_list.
     fn can_place_piece(&self, piece: PlacedPiece) -> bool;
     fn with_piece(self, piece: PlacedPiece) -> Self;
+    fn maybe_with_piece(&self, piece: PlacedPiece) -> Option<Self>;
     /// Try to place a piece in the first empty spot in the top left and return whether it
     /// succeeded.
     fn place_piece_top_left(&mut self, piece: Piece) -> bool {

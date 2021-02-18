@@ -28,6 +28,13 @@ impl Board for DisplayBoard {
         }
         self
     }
+    fn maybe_with_piece(&self, piece: PlacedPiece) -> Option<Self> {
+        if self.can_place_piece(piece) {
+            Some(self.with_piece(piece))
+        } else {
+            None
+        }
+    }
     fn is_cell_empty(&self, index: u8) -> bool {
         if index >= 50 {
             false
