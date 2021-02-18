@@ -11,11 +11,11 @@ pub struct BinaryBoard {
 impl Board for BinaryBoard {
     fn can_place_piece(&self, piece: PlacedPiece) -> bool {
         let info = get_placement_info(piece.piece);
-        if !is_valid_piece_placement(piece, info) {
+        let binary_piece = info.as_binary << piece.top_left;
+        if self.cells & binary_piece != 0 {
             return false;
         }
-        let binary_piece = info.as_binary << piece.top_left;
-        self.cells & binary_piece == 0
+        is_valid_piece_placement(piece, info)
     }
     fn with_piece(mut self, piece: PlacedPiece) -> Self {
         let info = get_placement_info(piece.piece);
