@@ -125,6 +125,32 @@ impl FacePolicy for TenPieceFacePolicy {
     }
 }
 
+#[derive(Copy, Clone)]
+struct NinePieceFacePolicy {
+    num_face_a: u8,
+}
+
+impl FacePolicy for NinePieceFacePolicy {
+    #[inline]
+    fn can_add_face(&self, f: Face) -> bool {
+        if f == Face::A && self.num_face_a == 4 {
+            return false;
+        }
+        true
+    }
+    #[inline]
+    fn with_face(mut self, f: Face) -> Self {
+        self.num_face_a += (f == Face::A) as u8;
+        self
+    }
+    fn from_placed_pieces(pieces: &[PlacedPiece]) -> Self {
+        let num_face_a = pieces.iter().filter(|p| p.piece.face() == Face::A).count() as u8;
+        NinePieceFacePolicy {
+            num_face_a,
+        }
+    }
+}
+
 fn solve_rec<B: Board + Copy, C: IterationCounter, F: FacePolicy>(
     board: B,
     colors_left: ColorSet,
