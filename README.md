@@ -18,3 +18,4 @@ Rust solver for the IQ Fit puzzle game.
 | Search patterns everywhere | 84584a7 | 3.52 us   | 2.05 ms    |
 | Add missing pattern        | b38e44d | 3.16 us   | 1.72 ms    |
 | Re-order board checks      | 12c5345 | 3.12 us   | 1.53 ms    |
+| Fuse board cond & update   | 0377fde | 3.10 us   | 1.50 ms    |
