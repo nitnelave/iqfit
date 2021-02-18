@@ -274,6 +274,6 @@ mod tests {
                 .first_empty_cell(0),
             None
         );
-        assert_eq!(c, 932400);
+        assert_eq!(c, 746636);
     }
 }

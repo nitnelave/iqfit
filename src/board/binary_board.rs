@@ -58,6 +58,12 @@ impl Board for BinaryBoard {
         //  ##
         let double_hole = (base_double_pattern & (n << 12) & (n << 21)) != 0;
         // Look for the following pattern:
+        //  #
+        // #.#
+        // #.#
+        //  #
+        let double_hole_vertical = (base_pattern & (n << 11) & (!n << 20) & (n << 19) & (n << 21) & (n << 30)) != 0;
+        // Look for the following pattern:
         //  ###
         // #...#
         //  ###
@@ -114,6 +120,7 @@ impl Board for BinaryBoard {
             != 0;
         single_hole
             || double_hole
+            || double_hole_vertical
             || triple_hole
             || triple_hole_l
             || triple_hole_l2
