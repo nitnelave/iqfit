@@ -16,3 +16,4 @@ Rust solver for the IQ Fit puzzle game.
 | More failure cases         | 6d6afde | 4.09 us   | 21.9 ms    |
 | Make board immutable       | 501c372 | 7.61 us   | 6.75 ms    |
 | Search patterns everywhere | 84584a7 | 3.52 us   | 2.05 ms    |
+| Add missing pattern        | b38e44d | 3.16 us   | 1.72 ms    |
