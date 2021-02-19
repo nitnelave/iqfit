@@ -1,3 +1,4 @@
+#![forbid(unsafe_code)]
 mod board;
 mod pieces;
 mod puzzles;

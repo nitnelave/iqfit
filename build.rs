@@ -57,7 +57,7 @@ fn rotate_piece(balls: &mut Vec<(i8, i8)>) {
         b.0 = b.1;
         b.1 = tmp;
     }
-    balls.sort();
+    balls.sort_unstable();
     let top_left = balls[0];
     for b in balls.iter_mut() {
         b.0 -= top_left.0;
@@ -79,7 +79,7 @@ fn coords_to_binary(coords: &[u8]) -> u64 {
     res
 }
 
-fn get_display_info(piece: &Vec<(i8, i8)>) -> DisplayBoardPlacementInfo {
+fn get_display_info(piece: &[(i8, i8)]) -> DisplayBoardPlacementInfo {
     let max_row = piece.iter().map(|b| b.0).max().unwrap();
     let min_col = piece.iter().map(|b| b.1).min().unwrap();
     let max_col = piece.iter().map(|b| b.1).max().unwrap();
@@ -100,15 +100,9 @@ fn get_display_info(piece: &Vec<(i8, i8)>) -> DisplayBoardPlacementInfo {
     }
 }
 
-fn write_piece<T: std::io::Write>(file: &mut T, piece: &Vec<(i8, i8)>) {
+fn write_piece<T: std::io::Write>(file: &mut T, piece: &[(i8, i8)]) {
     let info = get_display_info(piece);
-    write!(
-        file,
-        "    &{:#?},
-",
-        info
-    )
-    .unwrap();
+    writeln!(file, "    &{:#?},", info).unwrap();
 }
 
 fn write_pieces<T: std::io::Write>(file: &mut T) {
