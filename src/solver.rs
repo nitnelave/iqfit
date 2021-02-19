@@ -168,26 +168,26 @@ fn solve_rec<B: Board + Copy, C: IterationCounter, F: FacePolicy>(
         piece: Piece::new(),
         top_left: index,
     };
-    for c in COLOR_LIST.iter() {
-        if !colors_left.contains(*c) {
+    for &c in COLOR_LIST.iter() {
+        if !colors_left.contains(c) {
             continue;
         }
-        let next_colors = colors_left.without_color(*c);
-        piece.piece.set_color(*c);
-        for face in FACE_LIST.iter() {
-            if !face_policy.can_add_face(*face) {
+        let next_colors = colors_left.without_color(c);
+        piece.piece.set_color(c);
+        for &face in FACE_LIST.iter() {
+            if !face_policy.can_add_face(face) {
                 continue;
             }
-            piece.piece.set_face(*face);
-            for orientation in ORIENTATION_LIST.iter() {
-                piece.piece.set_orientation(*orientation);
+            piece.piece.set_face(face);
+            for &orientation in ORIENTATION_LIST.iter() {
+                piece.piece.set_orientation(orientation);
                 counter.increment();
                 if let Some(new_board) = board.maybe_with_piece(piece) {
                     if let Some(mut pieces) = solve_rec(
                         new_board,
                         next_colors,
                         index + 1,
-                        face_policy.with_face(*face),
+                        face_policy.with_face(face),
                         counter,
                     ) {
                         pieces.push(piece);
